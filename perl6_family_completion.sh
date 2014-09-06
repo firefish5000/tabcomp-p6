@@ -129,20 +129,20 @@ _panda_modules() { # TIMTOWTDI. (actualy, I think the container may change in fu
 _panda() {
 	local cur prev words cword
 	_init_completion || return
+	# Dont treat ':' as a wordbreak. Fixes our issue #1, our first bug! (Thanks moritz)
+	COMP_WORDBREAKS=${COMP_WORDBREAKS//:} # NOTE Im not sure if I am suppose to define it here...
 	list_args="--verbrose --installed"
 	install_args="--notests --nodeps"
 	case $prev in
 		install|--notests|--nodeps)
 			#COMPREPLY=( $( compgen -W 'install $install_args $( _panda_modules )'  -- "$cur" ) )
 			COMPREPLY=( $( compgen -W 'install $install_args'  -- "$cur" ) )
-			_perl6_match 'install' "${COMP_WORDS[@]}" && COMPREPLY+=( $( compgen -W '$( _panda_modules )'  -- "$cur" ) )
+			_perl6_match 'install' "$prev" "${COMP_WORDS[@]}" && COMPREPLY+=( $( compgen -W '$( _panda_modules )'  -- "$cur" ) )
 			_perl6_rem;
 			return 0
 			;;
 		list|--verbrose|--installed)
-			#COMPREPLY=( $( compgen -W 'list $list_args $( _panda_modules )' -- "$cur" ) )
 			COMPREPLY=( $( compgen -W 'list $list_args' -- "$cur" ) )
-			_perl6_match 'list' "${COMP_WORDS[@]}" && COMPREPLY+=( $( compgen -W '$( _panda_modules )'  -- "$cur" ) )
 			_perl6_rem;
 			return 0
 			;;
@@ -155,7 +155,11 @@ _panda() {
 	if [[ "$cur" == * ]]; then
 		COMPREPLY=( $( compgen -W '$list_args $install_args update info search install list' -- "$cur" ) )
 	fi
-} 
+}
+#_BC_dbg() { # used for debuging
+#	fifo_pipe="${HOME}/tmp/pipe/perl6cmdcomp.fifo"
+#	[[ -p "$fifo_pipe" ]] && echo "$@" > "$fifo_pipe"
+#}
 _rakudobrew() {
 	local cur prev words cword
 	_init_completion || return
