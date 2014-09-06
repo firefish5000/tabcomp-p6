@@ -57,6 +57,7 @@ _perl6_seper() { # Prints the arguments that are deliminated by 'cnt' number of 
 	[ "$iterend" -eq "$cnt" ] && return 0 # may chose to do 3 way in future
 	return 1
 }
+
 # NOTE: This slows things down!
 # Taken from gentoo's adaption of Ian Macdonald's bash_completion.
 # (Adapted from bash_completion by Ian Macdonald <ian@caliban.org>)
@@ -186,25 +187,37 @@ _rakudobrew() {
 _perl6() {
 	local cur prev words cword
 	_init_completion || return
-	case $prev in
-			--encoding)
-				COMPREPLY=( $( compgen -W 'utf8'  -- "$cur" ) )
-				return 0
-		  		;;
-	esac
 	longargs="--doc --help --stagestats --ll-exception --profile"
-	unlong="--target\= --trace\= --encoding\= --output\="
+	unlong="--target= --trace= --encoding= --output="
 	shortargs="-c -h -e -n -p -t -o -v"
 	unshort=''
 	repargs="--output --encoding -e -n -p -o" # Repeatable Arguments
 	assocargs="-h --help"	# Assosiated Arguments (only ones that cannot repeat)
-	if [[ "$cur" == --* ]]; then
-		COMPREPLY=( $( compgen -W '$longargs $unlong' -- "$cur" ) )
-		_perl6_rem $repargs '--' $assocargs -- $unlong
-	elif [[ "$cur" == -* ]]; then
-		COMPREPLY=( $( compgen -W '$shortargs' -- "$cur" ) )
-		_perl6_rem $repargs '--' $assocargs
-	fi
+	case $prev in
+		--encoding)
+			COMPREPLY=( $( compgen -W 'utf8'  -- "$cur" ) )
+			return 0
+			;;
+	esac
+	case "$cur" in
+			'--encoding='*)
+				# FIXME our '\=' is interpoliating to '='. Fix it or make --* yeild the same, 
+				base='--encoding='
+				COMPREPLY=( $( compgen -W '${base}utf8'  -- "$cur" ) )
+				return 0
+		  		;;
+			--* )
+				COMPREPLY=( $( compgen -W '$longargs $unlong' -- "$cur" ) )
+				_perl6_rem $repargs '--' $assocargs -- $unlong
+				return 0
+				;;
+			-* )
+				COMPREPLY=( $( compgen -W '$shortargs' -- "$cur" ) )
+				_perl6_rem $repargs '--' $assocargs
+				return 0
+				;;
+			# Default, list paths
+	esac
 } # &&
 complete -F _perl6 -o default perl6{,m,j,p} perl6-debug-{m,j,p}
 complete -F _panda -o default panda
