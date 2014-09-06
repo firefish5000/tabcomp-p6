@@ -1,1 +1,28 @@
-init
+A collection of P6 related files that I used/developed.
+
+Links to their project pages should be found here:
+None -- (@_@)
+
+Comming Soon:
+Cron::Parser
+	A Cron-family cronfile parser.
+	Current goals are to be able to
+	List times CronJobs would run
+	List the next CronJobs (a list when two+ jobs would run)
+	List the next CronJobs after Time offset,
+	Check the vadility of the times (0-9 for dow should fail this test)
+	Successfully identify each element of a CronJob
+	roughly: &<CronArgs> CronTime<min hr dom mon dow> <user>? CmdLine<[cmd args]+>
+Time::RTC_Alarm?
+	Goals:
+	Detect rtc devices (searche path for { ^ '/dev/rtc' \d+ $ } for now )
+	Creates, lists, and remove rtcalarm times. (max: one per device)
+
+The following do not yet have there own project page. If they have been here for a week+ feel free to request I make one.
+perl6_family_completion.sh
+	bash-completion for perl6 related packeges (currently perl6, panda, and rakudobrew)
+	Put it in your bash_completion directory or add
+	'source path/to/dir/perl6_family_completion.sh' to your bashrc.
+	NOTE: I am consdering splitting this into 2-3 seperate files. So it's currently up for debate
+
+
