@@ -124,6 +124,7 @@ HEREPERL
 
 _panda_modules() { # TIMTOWTDI. (actualy, I think the container may change in future versions(or implimintations).. but feel free to try seding/greping/whatever instead)
 	_panda_read_json_perl
+	# TODO fallback onto panda search (search should also generate a prjojects.json if it doesn't exist)
 }
 
 
@@ -153,7 +154,10 @@ _panda() {
 			return 0
 			;;
 	esac
-	if [[ "$cur" == * ]]; then
+	if _perl6_match 'install' "$prev" "${COMP_WORDS[@]}" ; then # I am assuming install eats the rest of the line
+		COMPREPLY+=( $( compgen -W '$( _panda_modules )'  -- "$cur" ) )
+		return 0;
+	elif [[ "$cur" == * ]]; then
 		COMPREPLY=( $( compgen -W '$list_args $install_args update info search install list' -- "$cur" ) )
 	fi
 }
@@ -203,7 +207,7 @@ _padre() {
 	longargs="--help --reset --version --desktop"
 	unlong="--home= --session= --actionqueue= --locale="
 	case "$cur" in
-		--*)
+		-*)
 			COMPREPLY=( $( compgen -W '$longargs $unlong' -- "$cur" ) )
 			_perl6_rem $repargs '--' $assocargs -- $unlong
 			return 0
