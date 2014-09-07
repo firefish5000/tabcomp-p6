@@ -197,6 +197,20 @@ _rakudobrew() { # Tab completion for rakudo brew.
 		_perl6_rem 
 	fi
 }
+_padre() {
+	local cur prev words cword
+	_init_completion || return
+	longargs="--help --reset --version --desktop"
+	unlong="--home= --session= --actionqueue= --locale="
+	case "$cur" in
+		--*)
+			COMPREPLY=( $( compgen -W '$longargs $unlong' -- "$cur" ) )
+			_perl6_rem $repargs '--' $assocargs -- $unlong
+			return 0
+			;;
+	esac
+	
+}
 _perl6() {
 	local cur prev words cword
 	_init_completion || return
@@ -235,3 +249,4 @@ _perl6() {
 complete -F _perl6 -o default perl6{,m,j,p} perl6-debug-{m,j,p}
 complete -F _panda -o default panda
 complete -F _rakudobrew -o default rakudobrew
+complete -F _padre -o default padre
