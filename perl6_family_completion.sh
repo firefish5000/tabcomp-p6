@@ -123,7 +123,13 @@ HEREPERL
 }
 
 _panda_modules() { # TIMTOWTDI. (actualy, I think the container may change in future versions(or implimintations).. but feel free to try seding/greping/whatever instead)
-	_panda_read_json_perl
+	out="$(_panda_read_json_perl)" # NOTE I think $out should hold fine, but depending on what chars are allowed for perl6mods, we may run into trubble
+	[[ -z "$out" ]] && { 
+		# Last resort, use 'panda list'. This both alows us to do completion without a projects.json,
+		out="$(panda list | awk '{print $1}')" # and generates one for faster completion on next run
+	}
+	echo "$out"
+	unset out
 	# TODO fallback onto panda search (search should also generate a prjojects.json if it doesn't exist)
 }
 
