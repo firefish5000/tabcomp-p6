@@ -55,32 +55,30 @@ _perl6_seper() { # Prints the arguments that are deliminated by 'cnt' number of 
 	[ "$iterend" -eq "$cnt" ] && return 0 # may chose to do 3 way in future
 	return 1
 }
-
 # NOTE: This slows things down!
 # Taken from gentoo's adaption of Ian Macdonald's bash_completion.
 # (Adapted from bash_completion by Ian Macdonald <ian@caliban.org>)
 # This removes any options from the list of completions that have
 # already been specified on the command line.
 _perl6_rem() {	# removes arguments previously used.
-			#usage: _perl6_rem repeatable words -- associated pairs -- words we shouldn't add spaces after
-	rep_words=($(_perl6_seper '0' '--' "$@")) # It looks like we can quote all of these without error. consider doing so.
-	assoc_words=($(_perl6_seper '1' '--' "$@"))
-	nospace_words=($(_perl6_seper '2' '--' "$@"))
-		COMPREPLY=($(echo "${COMP_WORDS[@]}" | \
+				# _perl6_rem repeatable words -- associated pairs -- words we shouldn't add spaces after
+	rep_words=($(_perl6_seper '0' '--' "$@"))		# These words can be repeated 
+	assoc_words=($(_perl6_seper '1' '--' "$@"))		# These words are paired. If we have seen one, we will not sugest either.
+	nospace_words=($(_perl6_seper '2' '--' "$@"))	# these words should not have a space appended to them (eg. --output= )
+	COMPREPLY=($(echo "${COMP_WORDS[@]}" | \	# NOTE i wonder why he didnt use a for loop? (would IFS need to be changed?)
 		(while read -d ' ' i; do
-			[[ -z ${i} ]] && continue
-		_perl6_match "${i}" "${rep_words[@]}" && continue
-		COMPREPLY=($(_perl6_assoc "${i}" "${assoc_words[@]}"))
-		# flatten array with spaces on either side,
-			# otherwise we cannot grep on word boundaries of
-			# first and last word
-			COMPREPLY=" ${COMPREPLY[@]} "
-			# remove word from list of completions
-			COMPREPLY=("${COMPREPLY/ ${i%% *} / }") # FIXME doesnt work for --target\= and alike
+			[[ -z ${i} ]] && continue							# next word if null.
+			_perl6_match "${i}" "${rep_words[@]}" && continue		# next if word may repeat
+			COMPREPLY=($(_perl6_assoc "${i}" "${assoc_words[@]}"))	# Remove word if its pair has been typed
+			COMPREPLY=" ${COMPREPLY[@]} " # flatten array with spaces on either side, so we can grep on word boundaries of first and last word.
+			COMPREPLY=("${COMPREPLY/ ${i%% *} / }") # remove word from list of completions
 		done
 		echo ${COMPREPLY[@]})))
-	[[ "${#COMPREPLY[@]}" -eq "1" ]] && [[ "${#nospace_words[@]}" -ge '1' ]] &&  _perl6_match "$COMPREPLY" "${nospace_words[@]}" && compopt -o nospace
-		return 0
+		# If only one match was found, and that match is a nospace_word, tell bash not to add a space after the completion.
+	[[ "${#COMPREPLY[@]}" -eq '1' ]] && [[ "${#nospace_words[@]}" -ge '1' ]] && {
+		_perl6_match "$COMPREPLY" "${nospace_words[@]}" && compopt -o nospace
+	}
+	return 0
 }
 #_BC_dbg() { # used for debuging
 #	fifo_pipe="${HOME}/tmp/pipe/perl6cmdcomp.fifo"
