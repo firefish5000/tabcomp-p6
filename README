@@ -1,13 +1,22 @@
 Bash completion for perl6 related packages.
 Currently provides
 rakudo perl6	--	Basic completion for rakudo perl6 and varients.
-panda			--	Basic and module name completions.
-rakudobrew		--	Basic and switch <impl> completion.
+panda			--	Basic and module name completion.
+rakudobrew		--	Basic completion and full switch and build completion.
 padre			--	Basic completion
 pugs?			--	Comming soon.
 
-perl6_family_completion.sh
-	bash-completion for perl6 related packeges (currently perl6, panda, rakudobrew, and padre)
-	Put it in your bash_completion directory or add
-	'source path/to/dir/perl6_family_completion.sh' to your bashrc.
-	NOTE: I am in the process of splitting this into seperat files.
+perl6_family_completion.sh -- a concateration of all completions into one file.
+
+NOTES:
+when sourcing any file from the same directory, be sure to type
+`source ./filename'
+DO NOT TRY 'source filename' as it may try to source the program named 'filename'
+(perl6_family_completion.sh, however, should be fine. since I doubt that is a program's name)  
+
+This complication could be avoided by renaming the files to <programname>_comp or alike.
+I chose to leave them as they are to try to follow the apparent
+standard naming convention (in /etc/bash_completion.d). 
+I figured that the number who would have problems would probably
+not be high enough to break convention, however it is up for debate.
+(I am not personnaly fond of having to type ./ while testing)
