@@ -11,7 +11,7 @@ perl6_family_completion.sh -- a concateration of all completions into one file.
 NOTES:
 when sourcing any file from the same directory, be sure to type
 `source ./filename'
-DO NOT TRY 'source filename' as it may try to source the program named 'filename'
+WARNING 'source filename' will source the program named 'filename', not our file.
 (perl6_family_completion.sh, however, should be fine. since I doubt that is a program's name)  
 
 This complication could be avoided by renaming the files to <programname>_comp or alike.
