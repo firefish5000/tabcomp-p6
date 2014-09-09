@@ -1,0 +1,90 @@
+# bash completion for (rakudo?) perl6
+# Put this in your bash_completion directory or add
+# 'source path/to/dir/perl6_family_completion.sh' to your bashrc and
+# running shells.
+
+# Usefull looking things that may or may not exist
+# _filedir
+##PERL6_COMMON>>
+# Prepending with _perl6_ so there are no conflicts when sourcing multiple files
+_perl6_match() { # Succeeds if argument is repeated. Must be an EXACT MATCH.
+		#usage,  _perl6_match 'str to match' a list of str #returns fale/1; 
+		#usage,  _perl6_match 'matched str' a 'matched str' was found  #returns true/0; 
+	repcur="$1"
+	shift
+	for val in "$@"; do
+		[[ "${repcur}" == "${val}" ]] && return 0
+	done
+	return 1
+}
+_perl6_assoc() { # Removes associated arguments. usage, from _perl6_rem: _perl6_assoc $i -h --help 
+	asscur=$1; shift
+	akv=($@)
+	for (( k=0; k<$((${#akv[@]}-1)); k+=2)); do
+		v=$(($k+1))
+		[[ "$asscur" == "${akv[$k]}" ]] && {
+			COMPREPLY=" ${COMPREPLY[@]} "
+			COMPREPLY=(${COMPREPLY/ ${akv[$v]%% *} / })
+		}
+		[[ "$asscur" == "${akv[$v]}" ]] && {
+			COMPREPLY=" ${COMPREPLY[@]} "
+			COMPREPLY=(${COMPREPLY/ ${akv[$k]%% *} / })
+		}
+	done
+	printf "%s\n" "${COMPREPLY[@]}"
+}
+_perl6_seper() { # Prints the arguments that are deliminated by 'cnt' number of 'sep's. ie:
+		# _perl6_seper 1 '--' -a -1 -- -2 -b -- c 3 ; #yeilds -2 -b; _perl6_seper 0 yeilds -a -1
+	cnt=$1; shift
+	sep=$1; shift
+	args=("$@")
+	idx=0
+	zarg=0
+	for ((iter=0; iter<=$cnt; iter++)); do
+		zarg=1
+		while [[ "$idx" -lt "${#args[@]}" ]]; do
+			zarg=0
+			arg="${args[$idx]}"; ((idx++))
+			[[ "$arg" == "$sep" ]] && {
+				[ "$iter" -eq "$cnt" ] && return 0
+				break
+			}
+			[[ "$iter" == "$cnt" ]] && printf "%s\n" "${arg}" # Im not sure how this will handle spaces
+		done
+		[ "$zarg" -ne "0" ] && return 1
+		iterend=$iter
+	done 
+	[ "$iterend" -eq "$cnt" ] && return 0 # may chose to do 3 way in future
+	return 1
+}
+
+# NOTE: This slows things down!
+# Taken from gentoo's adaption of Ian Macdonald's bash_completion.
+# (Adapted from bash_completion by Ian Macdonald <ian@caliban.org>)
+# This removes any options from the list of completions that have
+# already been specified on the command line.
+_perl6_rem() {	# removes arguments previously used.
+				# _perl6_rem repeatable words -- associated pairs -- words we shouldn't add spaces after
+	rep_words=($(_perl6_seper '0' '--' "$@"))		# These words can be repeated 
+	assoc_words=($(_perl6_seper '1' '--' "$@"))		# These words are paired. If we have seen one, we will not sugest either.
+	nospace_words=($(_perl6_seper '2' '--' "$@"))	# these words should not have a space appended to them (eg. --output= )
+	COMPREPLY=($(echo "${COMP_WORDS[@]}" | \	# NOTE i wonder why he didnt use a for loop? (would IFS need to be changed?)
+		(while read -d ' ' i; do
+			[[ -z ${i} ]] && continue							# next word if null.
+			_perl6_match "${i}" "${rep_words[@]}" && continue		# next if word may repeat
+			COMPREPLY=($(_perl6_assoc "${i}" "${assoc_words[@]}"))	# Remove word if its pair has been typed
+			COMPREPLY=" ${COMPREPLY[@]} " # flatten array with spaces on either side, so we can grep on word boundaries of first and last word.
+			COMPREPLY=("${COMPREPLY/ ${i%% *} / }") # remove word from list of completions
+		done
+		echo ${COMPREPLY[@]})))
+		# If only one match was found, and that match is a nospace_word, tell bash not to add a space after the completion.
+	[[ "${#COMPREPLY[@]}" -eq '1' ]] && [[ "${#nospace_words[@]}" -ge '1' ]] && {
+		_perl6_match "$COMPREPLY" "${nospace_words[@]}" && compopt -o nospace
+	}
+	return 0
+}
+#_BC_dbg() { # used for debuging
+#	fifo_pipe="${HOME}/tmp/pipe/perl6cmdcomp.fifo"
+#	[[ -p "$fifo_pipe" ]] && echo "$@" > "$fifo_pipe"
+#}
+##<<PERL6_COMMON
