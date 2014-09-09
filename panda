@@ -2,7 +2,8 @@
 # Put this in your bash_completion directory or add
 # 'source path/to/dir/panda' to your bashrc and
 # running shells.
-
+# If sourcing from the current dir, use `source ./panda'
+# NOT 'source panda', which sources the program panda, not this file.
 
 ##PERL6_COMMON>>
 # Prepending with _perl6_ so there are no conflicts when sourcing multiple files

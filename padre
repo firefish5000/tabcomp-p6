@@ -1,9 +1,9 @@
-# bash completion for perl6
+# bash completion for padre
 # Put this in your bash_completion directory or add
-# 'source path/to/dir/perl6' to your bashrc and
+# 'source path/to/dir/padre' to your bashrc and
 # running shells.
-# If sourcing from the current dir, use `source ./perl6'
-# NOT 'source perl6', which sources the program perl6, not this file.
+# If sourcing from the current dir, use `source ./padre'
+# NOT 'source padre', which sources the program padre, not this file.
 
 ##PERL6_COMMON>>
 # Prepending with _perl6_ so there are no conflicts when sourcing multiple files
@@ -89,39 +89,18 @@ _perl6_rem() {	# removes arguments previously used.
 #}
 ##<<PERL6_COMMON
 
-_perl6() {
+_padre() {
 	local cur prev words cword
 	_init_completion || return
-	longargs="--doc --help --stagestats --ll-exception --profile"
-	unlong="--target= --trace= --encoding= --output="
-	shortargs="-c -h -e -n -p -t -o -v"
-	unshort=''
-	repargs="--output --encoding -e -n -p -o" # Repeatable Arguments
-	assocargs="-h --help"	# Assosiated Arguments (only ones that cannot repeat)
-	case $prev in
-		--encoding)
-			COMPREPLY=( $( compgen -W 'utf8'  -- "$cur" ) )
+	longargs="--help --reset --version --desktop"
+	unlong="--home= --session= --actionqueue= --locale="
+	case "$cur" in
+		-*)
+			COMPREPLY=( $( compgen -W '$longargs $unlong' -- "$cur" ) )
+			_perl6_rem $repargs '--' $assocargs -- $unlong
 			return 0
 			;;
 	esac
-	case "$cur" in
-			'--encoding='*)
-				# FIXME our '\=' is interpoliating to '='. Fix it or make --* yeild the same, 
-				base='--encoding='
-				COMPREPLY=( $( compgen -W '${base}utf8'  -- "$cur" ) )
-				return 0
-		  		;;
-			--* )
-				COMPREPLY=( $( compgen -W '$longargs $unlong' -- "$cur" ) )
-				_perl6_rem $repargs '--' $assocargs -- $unlong
-				return 0
-				;;
-			-* )
-				COMPREPLY=( $( compgen -W '$shortargs' -- "$cur" ) )
-				_perl6_rem $repargs '--' $assocargs
-				return 0
-				;;
-			# Default, list paths
-	esac
-} # &&
-complete -F _perl6 -o default perl6{,m,j,p} perl6-debug-{m,j,p}
+	
+}
+complete -F _padre -o default padre
