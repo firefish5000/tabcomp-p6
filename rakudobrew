@@ -98,14 +98,14 @@ _rakudobrew_dir() {
 }
 _rakudobrew_inst_versions() { # finds all backends and versions installed. (in backend-version notation)
 	brewdir="$(_rakudobrew_dir)"
-	find "$brewdir" -mindepth 1 -maxdepth 1 -type d -regextype posix-extended -regex "${brewdir}"'/(moar|moar_jit|parrot|jvm)\-(HEAD|.*)' | sed 's/.*\///';
+	{ find "$brewdir" -mindepth 1 -maxdepth 1 -type d -regextype posix-extended -regex "${brewdir}"'/(moar|moar_jit|parrot|jvm)\-(HEAD|.*)' | sed 's/.*\///'; } 2>/dev/null
 }
 
 _rakudobrew_impl() {
 	 brewdir="$(_rakudobrew_dir)";
 	 baserepo="$(_rakudobrew_inst_versions | head -n 1)"
 	 pushd "${brewdir}/${baserepo}" 2>&1>/dev/null;
-	 git tag -l;
+	 git tag -l 2>/dev/null;
 }   
 
 _rakudobrew() { # Tab completion for rakudo brew.
@@ -113,7 +113,7 @@ _rakudobrew() { # Tab completion for rakudo brew.
 	_init_completion || return;
 	brewdir="$(_rakudobrew_dir)";
 	backends="parrot jvm moar moar_jit";
-	versions="HEAD" ;
+	versions="HEAD";
 	case $prev in
 			 switch)
 				 COMPREPLY=( $( compgen -W '$( _rakudobrew_inst_versions )'  -- "$cur" ) );
@@ -127,7 +127,7 @@ _rakudobrew() { # Tab completion for rakudo brew.
 				 ;;
 	esac
 	if  ( [[ "${#COMP_WORDS[@]}" -ge '3' ]] && [[ "${COMP_WORDS[-3]}" == "build" ]] && _perl6_match "$prev" $backends ); then
-		 COMPREPLY=( $( compgen -W "$(_rakudobrew_impl)"  -- "$cur" ) );
+		 COMPREPLY=( $( compgen -W "$versions $(_rakudobrew_impl)"  -- "$cur" ) );
 	elif [[ "$cur" == * ]]; then
 		 COMPREPLY=( $( compgen -W 'switch rehash list current build build-panda' -- "$cur" ) );
 		 _perl6_rem;

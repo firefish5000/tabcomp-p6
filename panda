@@ -129,10 +129,10 @@ HEREPERL
 
 _panda_modules() { # TIMTOWTDI. (actualy, I think the container may change in future versions(or implimintations).. but feel free to try seding/greping/whatever instead)
 	# store the output into $out. so we can check if modules were found and try another command if it failed.
-	out="$(_panda_read_json_perl)" # First try to read any/all projects.json files (created by panda on update/list/search/install)
+	out="$(_panda_read_json_perl 2>/dev/null)" # First try to read any/all projects.json files (created by panda on update/list/search/install)
 	[[ -z "$out" ]] && { 
 		# Last resort, use 'panda list'. This both alows us to do completion without a projects.json,
-		out="$(panda list | awk '{print $1}')" # and generates one for faster completion next time
+		out="$(panda list | awk '{print $1}')" 2>/dev/null # and generates one for faster completion next time
 	}
 	echo "$out"
 	unset out
