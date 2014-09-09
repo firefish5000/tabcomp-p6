@@ -1,7 +1,8 @@
-# bash completion for (rakudo?) perl6
+# bash completion for panda
 # Put this in your bash_completion directory or add
-# 'source path/to/dir/perl6_family_completion.sh' to your bashrc and
+# 'source path/to/dir/panda' to your bashrc and
 # running shells.
+
 
 ##PERL6_COMMON>>
 # Prepending with _perl6_ so there are no conflicts when sourcing multiple files
@@ -65,7 +66,8 @@ _perl6_rem() {	# removes arguments previously used.
 	rep_words=($(_perl6_seper '0' '--' "$@"))		# These words can be repeated 
 	assoc_words=($(_perl6_seper '1' '--' "$@"))		# These words are paired. If we have seen one, we will not sugest either.
 	nospace_words=($(_perl6_seper '2' '--' "$@"))	# these words should not have a space appended to them (eg. --output= )
-	COMPREPLY=($(echo "${COMP_WORDS[@]}" | \	# NOTE i wonder why he didnt use a for loop? (would IFS need to be changed?)
+	# NOTE i wonder why he didnt use a for loop? (would IFS need to be changed?)
+	COMPREPLY=($(echo "${COMP_WORDS[@]}" | \
 		(while read -d ' ' i; do
 			[[ -z ${i} ]] && continue							# next word if null.
 			_perl6_match "${i}" "${rep_words[@]}" && continue		# next if word may repeat
