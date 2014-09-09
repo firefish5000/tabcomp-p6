@@ -2,7 +2,8 @@
 # Put this in your bash_completion directory or add
 # 'source path/to/dir/rakudobrew' to your bashrc and
 # running shells.
-
+# If sourcing from the current dir, use `source ./rakudobrew'
+# NOT 'source rakudobrew', which sources the program rakudobrew, not this file.
 
 ##PERL6_COMMON>>
 # Prepending with _perl6_ so there are no conflicts when sourcing multiple files
@@ -87,40 +88,50 @@ _perl6_rem() {	# removes arguments previously used.
 #	[[ -p "$fifo_pipe" ]] && echo "$@" > "$fifo_pipe"
 #}
 ##<<PERL6_COMMON
-_rakudobrew_inst_versions() { # finds all backends and versions installed. (in backend-version notation)
-perl <<"HERE_INST_VERSIONS"
-	use feature q{say};
-	opendir my $dh, join(q{/}, $ENV{HOME}, q{.rakudobrew});
-	while (readdir($dh)) {
-		next unless ($_ =~ /^moar/);
-		say $_;
-	}
-	closedir($dh)
-HERE_INST_VERSIONS
-}
-_rakudobrew() { # Tab completion for rakudo brew.
-	local cur prev words cword
-	_init_completion || return
+
+_rakudobrew_dir() {
+	# in case some form of config file appears? 
+	# I added this under the *mostly* incorrect assumption that rakudobrew used the installation dir for storing files
+	# (which would be a bad idea since it wouldn't work for system installations)
 	brewdir="${HOME}/.rakudobrew"
-	backends="parrot jvm moar moar_jit"
-	versions="2014.08 2014.07 2014.06 2014.05 2014.04 2014.03 2014.02 2014.01 HEAD" #TODO better versions (if reasonable).
+	echo "$brewdir";
+}
+_rakudobrew_inst_versions() { # finds all backends and versions installed. (in backend-version notation)
+	brewdir="$(_rakudobrew_dir)"
+	find "$brewdir" -mindepth 1 -maxdepth 1 -type d -regextype posix-extended -regex "${brewdir}"'/(moar|moar_jit|parrot|jvm)\-(HEAD|.*)' | sed 's/.*\///';
+}
+
+_rakudobrew_impl() {
+	 brewdir="$(_rakudobrew_dir)";
+	 baserepo="$(_rakudobrew_inst_versions | head -n 1)"
+	 pushd "${brewdir}/${baserepo}" 2>&1>/dev/null;
+	 git tag -l;
+}   
+
+_rakudobrew() { # Tab completion for rakudo brew.
+	local cur prev words cword;
+	_init_completion || return;
+	brewdir="$(_rakudobrew_dir)";
+	backends="parrot jvm moar moar_jit";
+	versions="HEAD" ;
 	case $prev in
-			switch)
-				COMPREPLY=( $( compgen -W '$( _rakudobrew_inst_versions )'  -- "$cur" ) )
-				_perl6_rem
-				return 0
-		  		;;
-			build)
-				COMPREPLY=( $( compgen -W 'all $backends'  -- "$cur" ) )
-				_perl6_rem 
-				return 0
-		  		;;
+			 switch)
+				 COMPREPLY=( $( compgen -W '$( _rakudobrew_inst_versions )'  -- "$cur" ) );
+				 _perl6_rem;
+				 return 0;
+				 ;;
+			 build)
+				 COMPREPLY=( $( compgen -W 'all $backends'  -- "$cur" ) );
+				 _perl6_rem;
+				 return 0;
+				 ;;
 	esac
 	if  ( [[ "${#COMP_WORDS[@]}" -ge '3' ]] && [[ "${COMP_WORDS[-3]}" == "build" ]] && _perl6_match "$prev" $backends ); then
-		COMPREPLY=( $( compgen -W '$versions'  -- "$cur" ) ) # TODO version
+		 COMPREPLY=( $( compgen -W "$(_rakudobrew_impl)"  -- "$cur" ) );
 	elif [[ "$cur" == * ]]; then
-		COMPREPLY=( $( compgen -W 'switch rehash list current build build-panda' -- "$cur" ) )
-		_perl6_rem 
-	fi
+		 COMPREPLY=( $( compgen -W 'switch rehash list current build build-panda' -- "$cur" ) );
+		 _perl6_rem;
+	fi;
 }
+
 complete -F _rakudobrew -o default rakudobrew
